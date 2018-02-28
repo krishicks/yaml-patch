@@ -169,7 +169,7 @@ func tryTest(doc Container, op *Operation) error {
 		return err
 	}
 
-	if op.Value.Empty() && val == nil {
+	if op.Value == nil && val.Empty() {
 		return nil
 	}
 

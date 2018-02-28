@@ -19,6 +19,10 @@ func NewNode(raw *interface{}) *Node {
 // MarshalYAML implements yaml.Marshaler, and returns the correct interface{}
 // to be marshaled
 func (n *Node) MarshalYAML() (interface{}, error) {
+	if n == nil {
+		return nil, nil
+	}
+
 	if n.container != nil {
 		return n.container, nil
 	}
@@ -41,7 +45,7 @@ func (n *Node) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 // Empty returns whether the raw value is nil
 func (n *Node) Empty() bool {
-	return *n.raw == nil
+	return n == nil || *n.raw == nil
 }
 
 // Container returns the node as a Container
@@ -74,6 +78,10 @@ func (n *Node) Container() Container {
 // Equal compares the values of the raw interfaces that the YAML was
 // unmarshaled into
 func (n *Node) Equal(other *Node) bool {
+	if n == nil {
+		return other == nil
+	}
+
 	return reflect.DeepEqual(*n.raw, *other.raw)
 }
 
