@@ -16,6 +16,26 @@ func NewNode(raw *interface{}) *Node {
 	}
 }
 
+// NewNodeFromMap returns a new Node based on a map[interface{}]interface{}
+func NewNodeFromMap(m map[interface{}]interface{}) *Node {
+	var raw interface{}
+	raw = m
+
+	return &Node{
+		raw: &raw,
+	}
+}
+
+// NewNodeFromSlice returns a new Node based on a []interface{}
+func NewNodeFromSlice(s []interface{}) *Node {
+	var raw interface{}
+	raw = s
+
+	return &Node{
+		raw: &raw,
+	}
+}
+
 // MarshalYAML implements yaml.Marshaler, and returns the correct interface{}
 // to be marshaled
 func (n *Node) MarshalYAML() (interface{}, error) {
