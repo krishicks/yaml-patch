@@ -24,12 +24,15 @@ func DecodePatch(bs []byte) (Patch, error) {
 
 // Apply returns a YAML document that has been mutated per the patch
 func (p Patch) Apply(doc []byte) ([]byte, error) {
-	var c Container
-	docdec := yaml.NewDecoder(bytes.NewReader(doc))
+	var init []byte
+	var docBuffer = bytes.NewBuffer(init)
+	docDecoder := yaml.NewDecoder(bytes.NewReader(doc))
+	docEncoder := yaml.NewEncoder(docBuffer)
+
     for {
 		var iface interface{}
 
-		err := docdec.Decode(&iface)
+		err := docDecoder.Decode(&iface)
 		// Check for no more documents
 		if iface == nil {
         	break
@@ -39,6 +42,7 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
 		}
 
+		var c Container
 		c = NewNode(&iface).Container()
 
 		for _, op := range p {
@@ -64,7 +68,19 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 				}
 			}
 		}
+
+		err = docEncoder.Encode(c)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return yaml.Marshal(c)
+	err := docEncoder.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var out = docBuffer.Bytes()
+
+	return out, nil
 }
