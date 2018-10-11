@@ -30,14 +30,14 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 		var iface interface{}
 
 		err := docdec.Decode(&iface)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
-		}
-
 		// Check for no more documents
 		if iface == nil {
         	break
-        }
+		}
+		
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
+		}
 
 		c = NewNode(&iface).Container()
 
