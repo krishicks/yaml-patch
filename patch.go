@@ -31,7 +31,7 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 
 		err := docdec.Decode(&iface)
 		if err != nil {
-			return nil, fmt.Errorf("failed unmarshaling doc: %s\n\n%s", string(doc), err)
+			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
 		}
 
 		// Check for no more documents
