@@ -464,15 +464,31 @@ baz: qux
 				actualBytes, err := patch.Apply([]byte(doc))
 				Expect(err).NotTo(HaveOccurred())
 
-				var actualIface interface{}
-				err = yaml.Unmarshal(actualBytes, &actualIface)
-				Expect(err).NotTo(HaveOccurred())
+				// Create decoder for both actual patched bytes, and expectedYAML string passed on input
+				actualDecoder := yaml.NewDecoder(bytes.NewReader(actualBytes))
+				expectedDecoder := yaml.NewDecoder(bytes.NewReader([]byte(expectedYAML)))
 
-				var expectedIface interface{}
-				err = yaml.Unmarshal([]byte(expectedYAML), &expectedIface)
-				Expect(err).NotTo(HaveOccurred())
+				// Loop through each decoders a document at time
+				for {
+					var actualIface interface{}
+					var expectedIface interface{}
+			
+					// Decode document from byte string
+					actualErr := actualDecoder.Decode(&actualIface)
+					expectedErr := expectedDecoder.Decode(&expectedIface)
 
-				Expect(actualIface).To(Equal(expectedIface))
+					// Check for no more documents
+					if (actualIface == nil) && (expectedIface == nil) {
+						break
+					}
+
+					// Both input and output should be error free
+					Expect(actualErr).NotTo(HaveOccurred())
+					Expect(expectedErr).NotTo(HaveOccurred())
+
+					// Expect actual and expected outputs to be identical
+					Expect(actualIface).To(Equal(expectedIface))
+				}
 			},
 			Entry("a path that begins with a composite key",
 				`---
@@ -506,6 +522,36 @@ baz: qux
     - thud: boo
     - baz: quux
 - corge: grault
+`,
+			),
+			Entry("a path that begins with an array index and ends with a composite key (multiple document)",
+				`---
+- waldo:
+    - thud: boo
+    - foo: bar
+- corge: grault
+---
+- water:
+    - mal: goof
+    - foo: bar
+- bear: bacon
+`,
+				`---
+- op: replace
+  path: /0/foo=bar
+  value:
+    baz: quux
+`,
+				`---
+- waldo:
+    - thud: boo
+    - baz: quux
+- corge: grault
+---
+- water:
+    - mal: goof
+    - baz: quux
+- bear: bacon
 `,
 			),
 			Entry("a path that begins with an object key and ends with a composite key",
