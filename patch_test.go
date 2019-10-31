@@ -524,7 +524,7 @@ baz: qux
 - corge: grault
 `,
 			),
-			Entry("a path that begins with an array index and ends with a composite key (multiple document)",
+			Entry("a path that begins with an array index and ends with a composite key (multiple documents)",
 				`---
 - waldo:
     - thud: boo
@@ -687,6 +687,20 @@ a:
   path: /a/b/2
 `,
 			),
+			Entry("moving an element from an array with a bad pointer (multiple documents, second with error case)",
+				`---
+a:
+  b: ["ateste1", "1"]
+---
+a:
+  b: [1]
+`,
+				`---
+- op: move
+  from: /a/b/1
+  path: /a/b/2
+`,
+			),
 			Entry("an operation with an invalid pathz field",
 				`---
 foo: bar
@@ -718,6 +732,26 @@ name:
 				`---
 - op: replace
   path: /foo/2
+  value: bum
+`,
+			),
+			Entry("a replace operation on an array with an invalid path (multiple documents, first with error case)",
+				`---
+name:
+  foo:
+    mal: goof
+  qux:
+    bum
+---
+name:
+  foo:
+    bat: bam
+  qux:
+    bum
+`,
+				`---
+- op: replace
+  path: /name/foo/bat
   value: bum
 `,
 			),
