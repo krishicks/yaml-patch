@@ -1,6 +1,8 @@
 package yamlpatch_test
 
 import (
+	"bytes"
+
 	yamlpatch "github.com/krishicks/yaml-patch"
 	yaml "gopkg.in/yaml.v2"
 
@@ -20,15 +22,31 @@ var _ = Describe("Patch", func() {
 				actualBytes, err := patch.Apply([]byte(doc))
 				Expect(err).NotTo(HaveOccurred())
 
-				var actualIface interface{}
-				err = yaml.Unmarshal(actualBytes, &actualIface)
-				Expect(err).NotTo(HaveOccurred())
+				// Create decoder for both actual patched bytes, and expectedYAML string passed on input
+				actualDecoder := yaml.NewDecoder(bytes.NewReader(actualBytes))
+				expectedDecoder := yaml.NewDecoder(bytes.NewReader([]byte(expectedYAML)))
 
-				var expectedIface interface{}
-				err = yaml.Unmarshal([]byte(expectedYAML), &expectedIface)
-				Expect(err).NotTo(HaveOccurred())
+				// Loop through each decoders a document at time
+				for {
+					var actualIface interface{}
+					var expectedIface interface{}
+			
+					// Decode document from byte string
+					actualErr := actualDecoder.Decode(&actualIface)
+					expectedErr := expectedDecoder.Decode(&expectedIface)
 
-				Expect(actualIface).To(Equal(expectedIface))
+					// Check for no more documents
+					if (actualIface == nil) && (expectedIface == nil) {
+						break
+					}
+
+					// Both input and output should be error free
+					Expect(actualErr).NotTo(HaveOccurred())
+					Expect(expectedErr).NotTo(HaveOccurred())
+
+					// Expect actual and expected outputs to be identical
+					Expect(actualIface).To(Equal(expectedIface))
+				}
 			},
 			Entry("adding an element to an object",
 				`---
@@ -82,6 +100,22 @@ foo: [bar,qux,baz]
 foo: [bar,baz]
 `,
 			),
+			Entry("removing an element from an array (multiple documents)",
+			`---
+foo: [bar,qux,baz]
+---
+foo: [mal,baz,goof]
+`,
+				`---
+- op: remove
+  path: /foo/1
+`,
+				`---
+foo: [bar,baz]
+---
+foo: [mal,goof]
+`,
+		    ),
 			Entry("replacing an element in an object",
 				`---
 foo: bar
@@ -167,6 +201,28 @@ child:
   grandchild: {}
 `,
 			),
+			Entry("adding an object to an object (multiple documents)",
+			`---
+foo: bar
+---
+mal: goof
+`,
+			`---
+- op: add
+  path: /child
+  value:
+    grandchild: {}
+`,
+			`---
+foo: bar
+child:
+  grandchild: {}
+---
+mal: goof
+child:
+  grandchild: {}
+`,
+		),
 			Entry("appending an element to an array",
 				`---
 foo: [bar]
