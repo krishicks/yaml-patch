@@ -16,12 +16,28 @@ type Container interface {
 
 type nodeMap map[interface{}]*Node
 
+func (n *nodeMap) setAtRoot(val *Node) error {
+	switch vt := val.Container().(type) {
+	case *nodeMap:
+		for k, v := range *vt {
+			(*n)[k] = v
+		}
+	}
+	return nil
+}
+
 func (n *nodeMap) Set(key string, val *Node) error {
+	if len(key) == 0 {
+		return n.setAtRoot(val)
+	}
 	(*n)[key] = val
 	return nil
 }
 
 func (n *nodeMap) Add(key string, val *Node) error {
+	if len(key) == 0 {
+		return n.setAtRoot(val)
+	}
 	(*n)[key] = val
 	return nil
 }

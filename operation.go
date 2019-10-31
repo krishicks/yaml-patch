@@ -19,10 +19,15 @@ const (
 	OpTest    Op = "test"
 )
 
+const (
+	rootPath = "/"
+)
+
 // OpPath is an RFC6902 'pointer'
 type OpPath string
 
 // Decompose returns the pointer's components:
+// "/" => [], ""
 // "/foo" => [], "foo"
 // "/foo/1" => ["foo"], "1"
 // "/foo/1/bar" => ["foo", "1"], "bar"
@@ -84,6 +89,10 @@ func (o *Operation) Perform(c Container) error {
 }
 
 func tryAdd(doc Container, op *Operation) error {
+	if op.Path == rootPath {
+		return doc.Add("", op.Value)
+	}
+
 	con, key, err := findContainer(doc, &op.Path)
 	if err != nil {
 		return fmt.Errorf("yamlpatch add operation does not apply: doc is missing path: %s", op.Path)

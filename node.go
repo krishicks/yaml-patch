@@ -1,6 +1,8 @@
 package yamlpatch
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // Node holds a YAML document that has not yet been processed into a NodeMap or
 // NodeSlice

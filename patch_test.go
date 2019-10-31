@@ -118,6 +118,26 @@ qux:
   thud: fred
 `,
 			),
+			Entry("moving an element in an object to the root",
+				`---
+foo:
+  bar: baz
+  waldo: fred
+qux:
+  corge: grault
+`,
+				`---
+- op: move
+  from: /foo
+  path: /
+`,
+				`---
+bar: baz
+waldo: fred
+qux:
+  corge: grault
+`,
+			),
 			Entry("moving an element in an array",
 				`---
 foo: [all, grass, cows, eat]
@@ -215,6 +235,19 @@ foo: [baz]
 `,
 				`---
 - foo: [bum, qux, baz]
+`,
+			),
+			Entry("replacing an element in the root object",
+				`---
+foo: bar
+`,
+				`---
+- op: replace
+  path: /foo
+  value: qux
+`,
+				`---
+foo: qux
 `,
 			),
 			Entry("copying an element in an array within a root array with an index",
@@ -347,6 +380,21 @@ foo:
 				`---
 - foo: [bar, qux, baz]
   bar: [bar, qux, baz]
+`,
+			),
+			Entry("adding an element to the root of a document",
+				`---
+foo: bar
+`,
+				`---
+- op: add
+  path: /
+  value:
+    baz: qux
+`,
+				`---
+foo: bar
+baz: qux
 `,
 			),
 		)
