@@ -8,10 +8,10 @@ import (
 
 // Container is the interface for performing operations on Nodes
 type Container interface {
-	Get(key string) (*Node, error)
-	Set(key string, val *Node) error
-	Add(key string, val *Node) error
-	Remove(key string) error
+	Get(keyOrIndex string) (*Node, error)
+	Set(keyOrIndex string, val *Node) error
+	Add(keyOrIndex string, val *Node) error
+	Remove(keyOrIndex string) error
 }
 
 type nodeMap map[interface{}]*Node
