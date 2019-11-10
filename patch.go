@@ -1,8 +1,9 @@
 package yamlpatch
 
 import (
-	"fmt"
 	"bytes"
+	"fmt"
+	"io"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -24,21 +25,18 @@ func DecodePatch(bs []byte) (Patch, error) {
 
 // Apply returns a YAML document that has been mutated per the patch
 func (p Patch) Apply(doc []byte) ([]byte, error) {
-	var init []byte
-	var docBuffer = bytes.NewBuffer(init)
-	docDecoder := yaml.NewDecoder(bytes.NewReader(doc))
-	docEncoder := yaml.NewEncoder(docBuffer)
+	decoder := yaml.NewDecoder(bytes.NewReader(doc))
+	buf := bytes.NewBuffer([]byte{})
+	encoder := yaml.NewEncoder(buf)
 
-    for {
+	for {
 		var iface interface{}
-
-		err := docDecoder.Decode(&iface)
-		// Check for no more documents
-		if iface == nil {
-        	break
-		}
-		
+		err := decoder.Decode(&iface)
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
+
 			return nil, fmt.Errorf("failed to decode doc: %s\n\n%s", string(doc), err)
 		}
 
@@ -56,31 +54,29 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 				for _, path := range paths {
 					newOp := op
 					newOp.Path = OpPath(path)
-					err = newOp.Perform(c)
+					err := newOp.Perform(c)
 					if err != nil {
 						return nil, err
 					}
 				}
 			} else {
-				err = op.Perform(c)
+				err := op.Perform(c)
 				if err != nil {
 					return nil, err
 				}
 			}
 		}
 
-		err = docEncoder.Encode(c)
+		err = encoder.Encode(c)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to encode container: %s", err)
 		}
 	}
 
-	err := docEncoder.Close()
+	err := encoder.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	var out = docBuffer.Bytes()
-
-	return out, nil
+	return buf.Bytes(), nil
 }

@@ -30,7 +30,7 @@ var _ = Describe("Patch", func() {
 				for {
 					var actualIface interface{}
 					var expectedIface interface{}
-			
+
 					// Decode document from byte string
 					actualErr := actualDecoder.Decode(&actualIface)
 					expectedErr := expectedDecoder.Decode(&expectedIface)
@@ -101,7 +101,7 @@ foo: [bar,baz]
 `,
 			),
 			Entry("removing an element from an array (multiple documents)",
-			`---
+				`---
 foo: [bar,qux,baz]
 ---
 foo: [mal,baz,goof]
@@ -115,7 +115,7 @@ foo: [bar,baz]
 ---
 foo: [mal,goof]
 `,
-		    ),
+			),
 			Entry("replacing an element in an object",
 				`---
 foo: bar
@@ -202,18 +202,18 @@ child:
 `,
 			),
 			Entry("adding an object to an object (multiple documents)",
-			`---
+				`---
 foo: bar
 ---
 mal: goof
 `,
-			`---
+				`---
 - op: add
   path: /child
   value:
     grandchild: {}
 `,
-			`---
+				`---
 foo: bar
 child:
   grandchild: {}
@@ -222,7 +222,7 @@ mal: goof
 child:
   grandchild: {}
 `,
-		),
+			),
 			Entry("appending an element to an array",
 				`---
 foo: [bar]
@@ -472,7 +472,7 @@ baz: qux
 				for {
 					var actualIface interface{}
 					var expectedIface interface{}
-			
+
 					// Decode document from byte string
 					actualErr := actualDecoder.Decode(&actualIface)
 					expectedErr := expectedDecoder.Decode(&expectedIface)
