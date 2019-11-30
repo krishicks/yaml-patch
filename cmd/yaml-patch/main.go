@@ -17,7 +17,6 @@ type opts struct {
 func init() {
 	log.SetOutput(os.Stderr)
 	log.SetPrefix("[WARNING] ")
-	log.Println("::init()")
 }
 
 func main() {
@@ -61,8 +60,11 @@ func main() {
 	for _, patch := range patches {
 		mdoc, err = patch.Apply(mdoc)
 		if err != nil {
-			log.Fatalf("XXX error applying patch: %s", err)
-			//log.Printf("XXX error applying patch: %s\n", err)
+			if os.Getenv("SILENT") != "" {
+				log.Printf("error applying patch: %s\n", err)
+			} else {
+				log.Fatalf("error applying patch: %s", err)
+			}
 		}
 	}
 

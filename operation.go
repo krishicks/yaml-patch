@@ -111,8 +111,7 @@ func tryAdd(doc Container, op *Operation) error {
 func tryRemove(doc Container, op *Operation) error {
 	con, key, err := findContainer(doc, &op.Path)
 	if err != nil {
-		log.Printf("yamlpatch remove operation does not apply: doc is missing path: %s\n", op.Path)
-		return nil
+		return fmt.Errorf("yamlpatch remove operation does not apply: doc is missing path: %s", op.Path)
 	}
 
 	return con.Remove(key)
