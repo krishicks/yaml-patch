@@ -14,6 +14,12 @@ type opts struct {
 	OpsFiles []FileFlag `long:"ops-file" short:"o" value-name:"PATH" description:"Path to file with one or more operations"`
 }
 
+func init() {
+	log.SetOutput(os.Stderr)
+	log.SetPrefix("[WARNING] ")
+	log.Println("::init()")
+}
+
 func main() {
 	var o opts
 	_, err := flags.Parse(&o)
@@ -55,7 +61,8 @@ func main() {
 	for _, patch := range patches {
 		mdoc, err = patch.Apply(mdoc)
 		if err != nil {
-			log.Fatalf("error applying patch: %s", err)
+			log.Fatalf("XXX error applying patch: %s", err)
+			//log.Printf("XXX error applying patch: %s\n", err)
 		}
 	}
 
