@@ -15,6 +15,10 @@ clean:
 	rm yaml_patch_linux
 	rm yaml_patch.exe
 	rm yaml_patch_darwin
+
+install:
+	go install -v ./cmd/yaml-patch
+
 test-deps:
 	@type basht 1>/dev/null || go get github.com/progrium/basht
 
