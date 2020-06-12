@@ -51,7 +51,8 @@ func (p Patch) Apply(doc []byte) ([]byte, error) {
 					return nil, fmt.Errorf("could not expand pointer: %s", op.Path)
 				}
 
-				for _, path := range paths {
+				for i := len(paths) - 1; i >= 0; i-- {
+					path := paths[i]
 					newOp := op
 					newOp.Path = OpPath(path)
 					err := newOp.Perform(c)
