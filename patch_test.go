@@ -622,6 +622,38 @@ qux:
     - bar: baz
 `,
 			),
+			Entry("removes multiple entries from an array in a single op",
+				`---
+foo:
+  - bar: baz
+  - bar: baz
+  - waldo: fred
+---
+foo:
+  - waldo: fred
+  - bar: baz
+  - bar: baz
+---
+foo:
+  - bar: baz
+  - waldo: fred
+  - bar: baz
+`,
+				`---
+- op: remove
+  path: /foo/bar=baz
+`,
+				`---
+foo:
+  - waldo: fred
+---
+foo:
+  - waldo: fred
+---
+foo:
+  - waldo: fred
+`,
+			),
 		)
 
 		DescribeTable(
