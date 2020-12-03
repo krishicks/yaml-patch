@@ -19,6 +19,11 @@ func NewPathFinder(container Container) *PathFinder {
 	}
 }
 
+type route struct {
+	key string
+	value Container
+}
+
 // Find expands the given path into all matching paths, returning the canonical
 // versions of those matching paths
 func (p *PathFinder) Find(path string) []string {
@@ -28,8 +33,8 @@ func (p *PathFinder) Find(path string) []string {
 		return []string{"/"}
 	}
 
-	routes := map[string]Container{
-		"": p.root,
+	routes := []route {
+		route{"", p.root},
 	}
 
 	for _, part := range parts[1:] {
@@ -37,22 +42,23 @@ func (p *PathFinder) Find(path string) []string {
 	}
 
 	var paths []string
-	for k := range routes {
-		paths = append(paths, k)
+	for _, r := range routes {
+		paths = append(paths, r.key)
 	}
 
 	return paths
 }
 
-func find(part string, routes map[string]Container) map[string]Container {
-	matches := map[string]Container{}
+func find(part string, routes []route) (matches []route) {
+	for _, r := range routes {
+		prefix := r.key
+		container := r.value
 
-	for prefix, container := range routes {
 		if part == "-" {
-			for k := range routes {
-				matches[fmt.Sprintf("%s/-", k)] = routes[k]
+			for _, r = range routes {
+				matches = append(matches, route {fmt.Sprintf("%s/-", r.key), r.value})
 			}
-			return matches
+			return
 		}
 
 		if kv := strings.Split(part, "="); len(kv) == 2 {
@@ -64,42 +70,38 @@ func find(part string, routes map[string]Container) map[string]Container {
 
 		if node, err := container.Get(part); err == nil && node != nil {
 			path := fmt.Sprintf("%s/%s", prefix, part)
-			matches[path] = node.Container()
+			matches = append(matches, route {path, node.Container()})
 		}
 	}
 
-	return matches
+	return
 }
 
-func findAll(prefix, findKey, findValue string, container Container) map[string]Container {
+func findAll(prefix, findKey, findValue string, container Container) (matches []route) {
 	if container == nil {
 		return nil
 	}
 
 	if v, err := container.Get(findKey); err == nil && v != nil {
 		if vs, ok := v.Value().(string); ok && vs == findValue {
-			return map[string]Container{
-				prefix: container,
-			}
+			return []route {route{prefix, container}}
 		}
 	}
-
-	matches := map[string]Container{}
 
 	switch it := container.(type) {
 	case *nodeMap:
 		for k, v := range *it {
-			for route, match := range findAll(fmt.Sprintf("%s/%s", prefix, k), findKey, findValue, v.Container()) {
-				matches[route] = match
+			for _, r := range findAll(fmt.Sprintf("%s/%s", prefix, k), findKey, findValue, v.Container()) {
+				matches = append(matches, r)
 			}
 		}
 	case *nodeSlice:
 		for i, v := range *it {
-			for route, match := range findAll(fmt.Sprintf("%s/%d", prefix, i), findKey, findValue, v.Container()) {
-				matches[route] = match
+			for _, r := range findAll(fmt.Sprintf("%s/%d", prefix, i), findKey, findValue, v.Container()) {
+				matches = append(matches, r)
 			}
 		}
 	}
 
-	return matches
+	return
 }
