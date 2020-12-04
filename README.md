@@ -1,5 +1,7 @@
 # yaml-patch
 
+### **Note: This repo is for all intents and purposes abandoned. I would suggest using [ytt](https://get-ytt.io/) instead!**
+
 `yaml-patch` is a version of Evan Phoenix's
 [json-patch](https://github.com/evanphx/json-patch), which is an implementation
 of [JavaScript Object Notation (JSON) Patch](https://tools.ietf.org/html/rfc6902),
