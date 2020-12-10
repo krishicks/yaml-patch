@@ -3,6 +3,8 @@ package yamlpatch
 import (
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 )
 
@@ -85,6 +87,11 @@ func (o *Operation) Perform(c Container) error {
 		err = fmt.Errorf("Unexpected op: %s", o.Op)
 	}
 
+	if err != nil && os.Getenv("SILENT") != "" {
+		log.Println("SILENT: ", os.Getenv("SILENT"))
+		log.Println(err)
+		return nil
+	}
 	return err
 }
 
