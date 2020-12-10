@@ -3,6 +3,8 @@ package yamlpatch
 import (
 	"fmt"
 	"strings"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 // PathFinder can be used to find RFC6902-standard paths given non-standard
@@ -62,7 +64,13 @@ func find(part string, routes []route) (matches []route) {
 		}
 
 		if kv := strings.Split(part, "="); len(kv) == 2 {
-			if newMatches := findAll(prefix, kv[0], kv[1], container); len(newMatches) > 0 {
+			decoder := yaml.NewDecoder(strings.NewReader(kv[1]))
+			var value interface{}
+			if decoder.Decode(&value) != nil {
+				value = kv[1]
+			}
+
+			if newMatches := findAll(prefix, kv[0], value, container); len(newMatches) > 0 {
 				matches = newMatches
 			}
 			continue
@@ -77,13 +85,13 @@ func find(part string, routes []route) (matches []route) {
 	return
 }
 
-func findAll(prefix, findKey, findValue string, container Container) (matches []route) {
+func findAll(prefix, findKey string, findValue interface{}, container Container) (matches []route) {
 	if container == nil {
 		return nil
 	}
 
 	if v, err := container.Get(findKey); err == nil && v != nil {
-		if vs, ok := v.Value().(string); ok && vs == findValue {
+		if v.Value() == findValue {
 			return []route {route{prefix, container}}
 		}
 	}

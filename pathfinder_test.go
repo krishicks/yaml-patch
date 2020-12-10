@@ -24,7 +24,9 @@ jobs:
     - arg: arg1
     - arg: arg2
     bool: true
+    value: 0
   - get: B
+    value: 3.14
   - get: C/D
 
 - name: job2
@@ -60,6 +62,9 @@ jobs:
 			Entry("return a route for a single submatch with no help", "/jobs/get=A/arg=arg2", []string{"/jobs/0/plan/0/args/1"}),
 			Entry("return a route for a single submatch with help using escape ordering", "/jobs/get=C~1D", []string{"/jobs/0/plan/2"}),
 			Entry("return a route when given a pointer with an array thingy", "/jobs/name=job1/plan/-", []string{"/jobs/0/plan/-"}),
+			Entry("return a route for a boolean match", "/jobs/bool=true", []string{"/jobs/0/plan/0"}),
+			Entry("return a route for an integer", "/jobs/value=0", []string{"/jobs/0/plan/0"}),
+			Entry("return a route for a float", "/jobs/value=3.14", []string{"/jobs/0/plan/1"}),
 		)
 		DescribeTable(
 			"should not",
